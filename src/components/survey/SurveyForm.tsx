@@ -1,24 +1,56 @@
-import { useForm, FormProvider, type SubmitHandler } from "react-hook-form";
+import { useEffect } from "react";
+import { useForm, FormProvider, useFieldArray, type SubmitHandler } from "react-hook-form";
 import { type SurveyInputs } from "../../types/survey";
 import {
   RadioGroupField,
   CheckboxGroupField,
   SelectField,
   InputField,
+  NumberField,
 } from "../fields";
+import { RepeatBlockList } from "./RepeatBlockList";
+import { emptyRepeatItem, MAX_REPEAT, parseRepeatCount } from "./repeatConstants";
 
 export const SurveyForm = () => {
   const methods = useForm<SurveyInputs>({
     shouldUnregister: true,
   });
 
+  const { fields, replace } = useFieldArray({
+    name: "q2_repeat_items",
+    control: methods.control,
+  });
+
   const q1Value = methods.watch("q1_main");
   const q2Values = methods.watch("q2_options") || [];
+  const q2RepeatCountRaw = methods.watch("q2_repeat_count");
 
   const showQ2 = q1Value === "A" || q1Value === "D";
   const showQ3 = q1Value === "A";
   const showQ4 = q1Value === "B" || q1Value === "D";
   const showQ2Sub = showQ2 && q2Values.includes("other");
+  const showQ2Count = showQ2Sub;
+  const repeatCount = showQ2Count ? parseRepeatCount(q2RepeatCountRaw) : 0;
+  const showQ2Repeat = showQ2Count && repeatCount > 0;
+
+  useEffect(() => {
+    if (!showQ2Count || repeatCount === 0) {
+      if (fields.length > 0) replace([]);
+      return;
+    }
+
+    const current = methods.getValues("q2_repeat_items") ?? [];
+    if (current.length === repeatCount) return;
+
+    if (current.length > repeatCount) {
+      replace(current.slice(0, repeatCount));
+    } else {
+      replace([
+        ...current,
+        ...Array.from({ length: repeatCount - current.length }, emptyRepeatItem),
+      ]);
+    }
+  }, [showQ2Count, repeatCount, replace, methods, fields.length]);
 
   const onSubmit: SubmitHandler<SurveyInputs> = (data) => {
     console.log("送信ペイロード:", data);
@@ -65,6 +97,32 @@ export const SurveyForm = () => {
               label="問2-1. 「その他」の詳細を記入してください [必須]"
               required
               placeholder="例: 独自の要件があるため"
+            />
+          </div>
+        )}
+
+        {showQ2Count && (
+          <div style={{ borderLeft: "4px solid #007bff", marginLeft: "24px", paddingLeft: "16px" }}>
+            <NumberField
+              name="q2_repeat_count"
+              label={`問2-2. 登録する件数を入力してください [必須]（1〜${MAX_REPEAT}）`}
+              required
+              min={1}
+              max={MAX_REPEAT}
+              placeholder="例: 3"
+            />
+          </div>
+        )}
+
+        {showQ2Repeat && (
+          <div style={{ borderLeft: "4px solid #6f42c1", marginLeft: "48px", paddingLeft: "16px" }}>
+            <p style={{ fontWeight: "bold", marginBottom: "16px", color: "#6f42c1" }}>
+              問2-3. 各セットの項目を入力してください
+            </p>
+            <RepeatBlockList
+              namePrefix="q2_repeat_items"
+              fields={fields}
+              total={repeatCount}
             />
           </div>
         )}
