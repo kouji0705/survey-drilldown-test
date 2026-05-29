@@ -14,7 +14,7 @@ type Props = {
 
 export const RepeatBlockList = ({ namePrefix, fields, total, repeatFields }: Props) => {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+    <div style={{ display: "flex" , flexDirection: "column", gap: "20px" }}>
       {fields.map((field, index) => (
         <RepeatBlockSet
           key={field.id}
