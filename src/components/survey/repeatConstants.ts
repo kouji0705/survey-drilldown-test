@@ -1,10 +1,7 @@
-import type { RepeatItem } from "../../types/survey";
-
-export const emptyRepeatItem = (): RepeatItem => ({
-  field_a: "",
-  field_b: "",
-  field_c: "",
-});
+export const emptyRepeatItemFromTemplate = (
+  template: { name: string }[],
+): Record<string, string> =>
+  Object.fromEntries(template.map((t) => [t.name, ""]));
 
 export const parseRepeatCount = (value: unknown, maxRepeat: number): number => {
   if (value === "" || value === undefined || value === null) return 0;

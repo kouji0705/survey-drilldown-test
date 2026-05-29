@@ -1,8 +1,8 @@
 import { http, HttpResponse, delay } from "msw";
-import { mockSurveyDefinition } from "./data/surveyDefinition";
+import { mockSurveyDefinitionV2 } from "./data/surveyDefinition.v2";
 import type { SubmitSurveyResponse } from "../types/api";
 
-const surveys = new Map([[mockSurveyDefinition.id, mockSurveyDefinition]]);
+const surveys = new Map([[mockSurveyDefinitionV2.id, mockSurveyDefinitionV2]]);
 
 export const handlers = [
   http.get("/api/surveys/:surveyId", async ({ params }) => {
