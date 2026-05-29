@@ -7,6 +7,12 @@ type SurveyLoadState =
   | { status: "error"; message: string }
   | { status: "success"; data: SurveyDefinition };
 
+function toErrorMessage(err: unknown): string {
+  if (err instanceof ApiError) return err.message;
+  if (err instanceof Error) return err.message;
+  return "アンケートの取得に失敗しました";
+}
+
 /**
  * アンケート定義の取得と loading / error 状態を管理する Hook。
  *
@@ -26,24 +32,34 @@ type SurveyLoadState =
 export function useSurvey(surveyId: string) {
   const [state, setState] = useState<SurveyLoadState>({ status: "loading" });
 
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchSurveyDefinition(surveyId)
+      .then((data) => {
+        if (!cancelled) {
+          setState({ status: "success", data });
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setState({ status: "error", message: toErrorMessage(err) });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [surveyId]);
+
   const refetch = useCallback(() => {
     setState({ status: "loading" });
     fetchSurveyDefinition(surveyId)
       .then((data) => setState({ status: "success", data }))
       .catch((err: unknown) => {
-        const message =
-          err instanceof ApiError
-            ? err.message
-            : err instanceof Error
-              ? err.message
-              : "アンケートの取得に失敗しました";
-        setState({ status: "error", message });
+        setState({ status: "error", message: toErrorMessage(err) });
       });
   }, [surveyId]);
-
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
 
   return { ...state, refetch };
 }
