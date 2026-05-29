@@ -18,8 +18,11 @@ npm run dev
 | GET | `/api/surveys/:surveyId` | アンケート定義（ラベル・選択肢・maxRepeatCount など） |
 | POST | `/api/surveys/:surveyId/responses` | 回答送信 |
 
-モックデータ: `src/mocks/data/surveyDefinition.ts`  
-ハンドラ: `src/mocks/handlers.ts`
+モック: `src/infrastructure/mocks/`  
+定義 JSON: `src/infrastructure/mocks/fixtures/survey.sample.json`  
+構成: `docs/architecture.md`  
+設計ガイド: `docs/design-guide.md`  
+フォーム設計: `docs/form-design.md`
 
 実 API に切り替える場合は `VITE_API_BASE_URL` を設定し、本番では MSW を起動しない構成のまま `api/survey.ts` をそのまま利用できます。
 

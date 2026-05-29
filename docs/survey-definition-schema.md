@@ -105,6 +105,5 @@
 
 ## サンプルファイル
 
-- JSON: `src/mocks/data/surveyDefinition.sample.json`
-- TypeScript: `src/mocks/data/surveyDefinition.v2.ts`
-- 型: `src/types/surveyDefinition.ts`
+- JSON: `src/infrastructure/mocks/fixtures/survey.sample.json`
+- 型・ドメイン: `src/domain/survey/model/definition.ts`
