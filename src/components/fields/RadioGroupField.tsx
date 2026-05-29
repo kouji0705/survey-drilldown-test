@@ -10,10 +10,9 @@ type Props = {
   name: string;
   label: string;
   options: Option[];
-  required?: boolean;
 };
 
-export const RadioGroupField = ({ name, label, options, required }: Props) => {
+export const RadioGroupField = ({ name, label, options }: Props) => {
   const { register } = useFormContext();
   return (
     <div style={{ padding: "16px", background: "#fff", borderRadius: "8px", border: "1px solid #ddd" }}>
@@ -24,7 +23,7 @@ export const RadioGroupField = ({ name, label, options, required }: Props) => {
             <input
               type="radio"
               value={opt.value}
-              {...register(name, { required: required ? "必須項目です" : false })}
+              {...register(name)}
             />
             {opt.label}
           </label>

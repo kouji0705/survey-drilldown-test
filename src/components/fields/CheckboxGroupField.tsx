@@ -10,10 +10,9 @@ type Props = {
   name: string;
   label: string;
   options: Option[];
-  required?: boolean;
 };
 
-export const CheckboxGroupField = ({ name, label, options, required }: Props) => {
+export const CheckboxGroupField = ({ name, label, options }: Props) => {
   const { register } = useFormContext();
   return (
     <div style={{ padding: "16px", background: "#f8f9fa", borderRadius: "8px", border: "1px solid #ced4da" }}>
@@ -24,7 +23,7 @@ export const CheckboxGroupField = ({ name, label, options, required }: Props) =>
             <input
               type="checkbox"
               value={opt.value}
-              {...register(name, { required: required ? "1つ以上選択してください" : false })}
+              {...register(name)}
             />
             {opt.label}
           </label>

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm, FormProvider, type SubmitHandler } from "react-hook-form";
 import { submitSurveyResponse } from "../../api/survey";
 import { ApiError } from "../../api/client";
 import type { SurveyDefinitionV2, SurveyFieldRepeat } from "../../types/surveyDefinition";
-import { getVisibleFieldIds, isFieldRequired } from "../../survey/evaluateVisibility";
+import { getVisibleFieldIds } from "../../survey/evaluateVisibility";
+import { createSurveyResolver } from "../../survey/createSurveyResolver";
 import { SurveyFieldRenderer } from "./SurveyFieldRenderer";
 import { RepeatFieldSection } from "./RepeatFieldSection";
 
@@ -16,8 +17,13 @@ export const SurveyForm = ({ surveyId, definition }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const resolver = useMemo(() => createSurveyResolver(definition), [definition]);
+
   const methods = useForm<Record<string, unknown>>({
     shouldUnregister: true,
+    resolver,
+    mode: "onSubmit",
+    reValidateMode: "onChange",
   });
 
   const values = methods.watch();
@@ -66,12 +72,10 @@ export const SurveyForm = ({ surveyId, definition }: Props) => {
             );
           }
 
-          const required = isFieldRequired(definition, field.id, isVisible);
           return (
             <SurveyFieldRenderer
               key={field.id}
               field={field}
-              required={required}
               definition={definition}
             />
           );

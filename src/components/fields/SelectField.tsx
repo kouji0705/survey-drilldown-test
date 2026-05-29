@@ -10,16 +10,15 @@ type Props = {
   name: string;
   label: string;
   options: Option[];
-  required?: boolean;
 };
 
-export const SelectField = ({ name, label, options, required }: Props) => {
+export const SelectField = ({ name, label, options }: Props) => {
   const { register } = useFormContext();
   return (
     <div style={{ padding: "16px", background: "#f8f9fa", borderRadius: "8px", border: "1px solid #ced4da" }}>
       <label style={{ display: "block", fontWeight: "bold", marginBottom: "12px" }}>{label}</label>
       <select
-        {...register(name, { required: required ? "必須項目です" : false })}
+        {...register(name)}
         style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }}
       >
         <option value="">選択してください</option>

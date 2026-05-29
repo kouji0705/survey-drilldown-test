@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import type { SurveyDefinitionV2, SurveyFieldRepeat } from "../../types/surveyDefinition";
-import { emptyRepeatItemFromTemplate, parseRepeatCount } from "./repeatConstants";
+import { emptyRepeatItemFromTemplate, parseRepeatCount } from "../../survey/repeatUtils";
 import { RepeatBlockList } from "./RepeatBlockList";
 
 type Props = {

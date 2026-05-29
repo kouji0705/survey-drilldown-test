@@ -33,7 +33,6 @@ export const RepeatBlockSet = ({ index, total, namePrefix, template }: Props) =>
               key={item.name}
               name={name}
               label={item.label}
-              required
               placeholder={item.placeholder}
             />
           );
@@ -43,7 +42,6 @@ export const RepeatBlockSet = ({ index, total, namePrefix, template }: Props) =>
             key={item.name}
             name={name}
             label={item.label}
-            required
             options={item.choices ?? []}
           />
         );

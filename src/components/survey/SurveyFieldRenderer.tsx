@@ -9,18 +9,16 @@ import {
 
 type Props = {
   field: SurveyField;
-  required: boolean;
   definition: SurveyDefinitionV2;
 };
 
-export const SurveyFieldRenderer = ({ field, required, definition }: Props) => {
+export const SurveyFieldRenderer = ({ field, definition }: Props) => {
   switch (field.type) {
     case "radio":
       return (
         <RadioGroupField
           name={field.name}
           label={field.label}
-          required={required}
           options={field.choices}
         />
       );
@@ -29,7 +27,6 @@ export const SurveyFieldRenderer = ({ field, required, definition }: Props) => {
         <CheckboxGroupField
           name={field.name}
           label={field.label}
-          required={required}
           options={field.choices}
         />
       );
@@ -38,7 +35,6 @@ export const SurveyFieldRenderer = ({ field, required, definition }: Props) => {
         <InputField
           name={field.name}
           label={field.label}
-          required={required}
           placeholder={field.placeholder}
         />
       );
@@ -55,7 +51,6 @@ export const SurveyFieldRenderer = ({ field, required, definition }: Props) => {
         <NumberField
           name={field.name}
           label={label}
-          required={required}
           min={field.min}
           max={maxCount}
           placeholder={field.placeholder}
@@ -67,7 +62,6 @@ export const SurveyFieldRenderer = ({ field, required, definition }: Props) => {
         <SelectField
           name={field.name}
           label={field.label}
-          required={required}
           options={field.choices}
         />
       );
