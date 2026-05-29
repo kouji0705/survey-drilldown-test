@@ -1,12 +1,16 @@
+import type { SurveyDefinition } from "../../types/api";
 import { InputField, SelectField } from "../fields";
+
+type RepeatFields = SurveyDefinition["questions"]["q2_repeat_block"]["fields"];
 
 type Props = {
   index: number;
   total: number;
   namePrefix: string;
+  fields: RepeatFields;
 };
 
-export const RepeatBlockSet = ({ index, total, namePrefix }: Props) => {
+export const RepeatBlockSet = ({ index, total, namePrefix, fields }: Props) => {
   const base = `${namePrefix}.${index}`;
   return (
     <div
@@ -25,24 +29,21 @@ export const RepeatBlockSet = ({ index, total, namePrefix }: Props) => {
       </div>
       <InputField
         name={`${base}.field_a`}
-        label="項目A [必須]"
+        label={fields.field_a.label}
         required
-        placeholder="項目Aを入力"
+        placeholder={fields.field_a.placeholder}
       />
       <InputField
         name={`${base}.field_b`}
-        label="項目B [必須]"
+        label={fields.field_b.label}
         required
-        placeholder="項目Bを入力"
+        placeholder={fields.field_b.placeholder}
       />
       <SelectField
         name={`${base}.field_c`}
-        label="項目C [必須]"
+        label={fields.field_c.label}
         required
-        options={[
-          { value: "opt1", label: "選択肢 1" },
-          { value: "opt2", label: "選択肢 2" },
-        ]}
+        options={fields.field_c.options}
       />
     </div>
   );

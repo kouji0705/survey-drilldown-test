@@ -1,5 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm, FormProvider, useFieldArray, type SubmitHandler } from "react-hook-form";
+import { submitSurveyResponse } from "../../api/survey";
+import { ApiError } from "../../api/client";
+import type { SurveyDefinition } from "../../types/api";
 import { type SurveyInputs } from "../../types/survey";
 import {
   RadioGroupField,
@@ -9,9 +12,18 @@ import {
   NumberField,
 } from "../fields";
 import { RepeatBlockList } from "./RepeatBlockList";
-import { emptyRepeatItem, MAX_REPEAT, parseRepeatCount } from "./repeatConstants";
+import { emptyRepeatItem, parseRepeatCount } from "./repeatConstants";
 
-export const SurveyForm = () => {
+type Props = {
+  surveyId: string;
+  definition: SurveyDefinition;
+};
+
+export const SurveyForm = ({ surveyId, definition }: Props) => {
+  const { questions, maxRepeatCount } = definition;
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const methods = useForm<SurveyInputs>({
     shouldUnregister: true,
   });
@@ -28,9 +40,9 @@ export const SurveyForm = () => {
   const showQ2 = q1Value === "A" || q1Value === "D";
   const showQ3 = q1Value === "A";
   const showQ4 = q1Value === "B" || q1Value === "D";
-  const showQ2Sub = showQ2 && q2Values.includes("other");
+  const showQ2Sub = showQ2 && q2Values.includes(questions.q2_options.drilldownValue);
   const showQ2Count = showQ2Sub;
-  const repeatCount = showQ2Count ? parseRepeatCount(q2RepeatCountRaw) : 0;
+  const repeatCount = showQ2Count ? parseRepeatCount(q2RepeatCountRaw, maxRepeatCount) : 0;
   const showQ2Repeat = showQ2Count && repeatCount > 0;
 
   useEffect(() => {
@@ -52,10 +64,29 @@ export const SurveyForm = () => {
     }
   }, [showQ2Count, repeatCount, replace, methods, fields.length]);
 
-  const onSubmit: SubmitHandler<SurveyInputs> = (data) => {
-    console.log("送信ペイロード:", data);
-    alert(JSON.stringify(data, null, 2));
+  const onSubmit: SubmitHandler<SurveyInputs> = async (data) => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      const result = await submitSurveyResponse(surveyId, data);
+      console.log("送信成功:", result);
+      alert(
+        `送信完了\nresponseId: ${result.responseId}\nreceivedAt: ${result.receivedAt}`,
+      );
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : "送信に失敗しました";
+      setSubmitError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const repeatCountLabel = `${questions.q2_repeat_count.label}（${questions.q2_repeat_count.min}〜${maxRepeatCount}）`;
 
   return (
     <FormProvider {...methods}>
@@ -65,27 +96,18 @@ export const SurveyForm = () => {
       >
         <RadioGroupField
           name="q1_main"
-          label="問1. 該当するものを選択してください [必須]"
-          required
-          options={[
-            { value: "A", label: "A (問2, 問3へ)" },
-            { value: "B", label: "B (問4へ)" },
-            { value: "C", label: "C (追加設問なし)" },
-            { value: "D", label: "D (問2, 問4へ)" },
-          ]}
+          label={questions.q1_main.label}
+          required={questions.q1_main.required}
+          options={questions.q1_main.options}
         />
 
         {showQ2 && (
           <div style={{ borderLeft: "4px solid #007bff", paddingLeft: "16px" }}>
             <CheckboxGroupField
               name="q2_options"
-              label="問2. 関連する項目をすべて選んでください [必須]"
-              required
-              options={[
-                { value: "item1", label: "項目 1" },
-                { value: "item2", label: "項目 2" },
-                { value: "other", label: "その他（詳細入力へ）" },
-              ]}
+              label={questions.q2_options.label}
+              required={questions.q2_options.required}
+              options={questions.q2_options.options}
             />
           </div>
         )}
@@ -94,9 +116,9 @@ export const SurveyForm = () => {
           <div style={{ borderLeft: "4px solid #007bff", marginLeft: "24px", paddingLeft: "16px" }}>
             <InputField
               name="q2_sub_reason"
-              label="問2-1. 「その他」の詳細を記入してください [必須]"
-              required
-              placeholder="例: 独自の要件があるため"
+              label={questions.q2_sub_reason.label}
+              required={questions.q2_sub_reason.required}
+              placeholder={questions.q2_sub_reason.placeholder}
             />
           </div>
         )}
@@ -105,11 +127,11 @@ export const SurveyForm = () => {
           <div style={{ borderLeft: "4px solid #007bff", marginLeft: "24px", paddingLeft: "16px" }}>
             <NumberField
               name="q2_repeat_count"
-              label={`問2-2. 登録する件数を入力してください [必須]（1〜${MAX_REPEAT}）`}
-              required
-              min={1}
-              max={MAX_REPEAT}
-              placeholder="例: 3"
+              label={repeatCountLabel}
+              required={questions.q2_repeat_count.required}
+              min={questions.q2_repeat_count.min}
+              max={maxRepeatCount}
+              placeholder={questions.q2_repeat_count.placeholder}
             />
           </div>
         )}
@@ -117,12 +139,13 @@ export const SurveyForm = () => {
         {showQ2Repeat && (
           <div style={{ borderLeft: "4px solid #6f42c1", marginLeft: "48px", paddingLeft: "16px" }}>
             <p style={{ fontWeight: "bold", marginBottom: "16px", color: "#6f42c1" }}>
-              問2-3. 各セットの項目を入力してください
+              {questions.q2_repeat_block.title}
             </p>
             <RepeatBlockList
               namePrefix="q2_repeat_items"
               fields={fields}
               total={repeatCount}
+              repeatFields={questions.q2_repeat_block.fields}
             />
           </div>
         )}
@@ -131,12 +154,9 @@ export const SurveyForm = () => {
           <div style={{ borderLeft: "4px solid #28a745", paddingLeft: "16px" }}>
             <SelectField
               name="q3_category"
-              label="問3. カテゴリを選択してください [必須]"
-              required
-              options={[
-                { value: "cat1", label: "カテゴリ 1" },
-                { value: "cat2", label: "カテゴリ 2" },
-              ]}
+              label={questions.q3_category.label}
+              required={questions.q3_category.required}
+              options={questions.q3_category.options}
             />
           </div>
         )}
@@ -145,30 +165,35 @@ export const SurveyForm = () => {
           <div style={{ borderLeft: "4px solid #ffc107", paddingLeft: "16px" }}>
             <InputField
               name="q4_freetext"
-              label="問4. 自由記述欄 [必須]"
-              required
-              placeholder="特記事項を入力してください"
+              label={questions.q4_freetext.label}
+              required={questions.q4_freetext.required}
+              placeholder={questions.q4_freetext.placeholder}
             />
           </div>
+        )}
+
+        {submitError && (
+          <p style={{ color: "#dc3545", fontWeight: "bold", margin: 0 }}>{submitError}</p>
         )}
 
         <div style={{ marginTop: "16px" }}>
           <button
             type="submit"
+            disabled={isSubmitting}
             style={{
               width: "100%",
               padding: "16px",
-              background: "#000",
+              background: isSubmitting ? "#666" : "#000",
               color: "#fff",
               border: "none",
               borderRadius: "8px",
-              cursor: "pointer",
+              cursor: isSubmitting ? "not-allowed" : "pointer",
               fontSize: "16px",
               fontWeight: "bold",
               transition: "0.2s",
             }}
           >
-            ペイロードを生成して検証
+            {isSubmitting ? "送信中..." : definition.submitButtonLabel}
           </button>
         </div>
       </form>

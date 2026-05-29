@@ -1,3 +1,30 @@
+# survey-drilldown-test
+
+分岐・深掘り・繰り返し設問を検証するアンケートフォーム（React + react-hook-form + MSW）。
+
+## 開発
+
+```bash
+npm install
+npm run dev
+```
+
+開発時は [MSW](https://mswjs.io/) が API をモックします（`npm run dev` のみ。本番ビルドでは無効）。
+
+## API（モック）
+
+| メソッド | パス | 説明 |
+|----------|------|------|
+| GET | `/api/surveys/:surveyId` | アンケート定義（ラベル・選択肢・maxRepeatCount など） |
+| POST | `/api/surveys/:surveyId/responses` | 回答送信 |
+
+モックデータ: `src/mocks/data/surveyDefinition.ts`  
+ハンドラ: `src/mocks/handlers.ts`
+
+実 API に切り替える場合は `VITE_API_BASE_URL` を設定し、本番では MSW を起動しない構成のまま `api/survey.ts` をそのまま利用できます。
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
