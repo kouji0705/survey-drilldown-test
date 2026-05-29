@@ -1,0 +1,165 @@
+{
+  "id": "survey-001",
+  "title": "複雑な分岐・深層ドリルダウン検証",
+  "fields": [
+    {
+      "id": "q1_main",
+      "name": "q1_main",
+      "type": "radio",
+      "label": "問1. 該当するものを選択してください",
+      "choices": [
+        { "value": "A", "label": "A (問2, 問3へ)" },
+        { "value": "B", "label": "B (問4へ)" },
+        { "value": "C", "label": "C (追加設問なし)" },
+        { "value": "D", "label": "D (問2, 問4へ)" }
+      ]
+    },
+    {
+      "id": "q2_options",
+      "name": "q2_options",
+      "type": "checkbox",
+      "label": "問2. 関連する項目をすべて選んでください",
+      "choices": [
+        { "value": "item1", "label": "項目 1" },
+        { "value": "item2", "label": "項目 2" },
+        { "value": "other", "label": "その他（詳細入力へ）" }
+      ]
+    },
+    {
+      "id": "q2_sub_reason",
+      "name": "q2_sub_reason",
+      "type": "text",
+      "label": "問2-1. 「その他」の詳細を記入してください",
+      "placeholder": "例: 独自の要件があるため"
+    },
+    {
+      "id": "q2_repeat_count",
+      "name": "q2_repeat_count",
+      "type": "number",
+      "label": "問2-2. 登録する件数を入力してください",
+      "placeholder": "例: 3",
+      "min": 1
+    },
+    {
+      "id": "q2_repeat_block",
+      "name": "q2_repeat_items",
+      "type": "repeat",
+      "label": "問2-3. 各セットの項目を入力してください",
+      "template": [
+        {
+          "name": "field_a",
+          "type": "text",
+          "label": "項目A",
+          "placeholder": "項目Aを入力"
+        },
+        {
+          "name": "field_b",
+          "type": "text",
+          "label": "項目B",
+          "placeholder": "項目Bを入力"
+        },
+        {
+          "name": "field_c",
+          "type": "select",
+          "label": "項目C",
+          "choices": [
+            { "value": "opt1", "label": "選択肢 1" },
+            { "value": "opt2", "label": "選択肢 2" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q3_category",
+      "name": "q3_category",
+      "type": "select",
+      "label": "問3. カテゴリを選択してください",
+      "choices": [
+        { "value": "cat1", "label": "カテゴリ 1" },
+        { "value": "cat2", "label": "カテゴリ 2" }
+      ]
+    },
+    {
+      "id": "q4_freetext",
+      "name": "q4_freetext",
+      "type": "text",
+      "label": "問4. 自由記述欄",
+      "placeholder": "特記事項を入力してください"
+    }
+  ],
+  "options": {
+    "drilldown": {
+      "q1_main": [
+        {
+          "match": { "in": ["A", "D"] },
+          "show": ["q2_options"]
+        },
+        {
+          "match": "A",
+          "show": ["q3_category"]
+        },
+        {
+          "match": "B",
+          "show": ["q4_freetext"]
+        },
+        {
+          "match": "C",
+          "show": []
+        },
+        {
+          "match": "D",
+          "show": ["q4_freetext"]
+        }
+      ],
+      "q2_options": [
+        {
+          "match": { "includes": "other" },
+          "show": ["q2_sub_reason", "q2_repeat_count"]
+        }
+      ],
+      "q2_repeat_count": [
+        {
+          "match": { "gte": 1 },
+          "show": ["q2_repeat_block"]
+        }
+      ]
+    },
+    "rules": {
+      "q1_main": {
+        "visibility": "always",
+        "required": "required"
+      },
+      "q2_options": {
+        "visibility": "hidden",
+        "required": "required"
+      },
+      "q2_sub_reason": {
+        "visibility": "hidden",
+        "required": "required"
+      },
+      "q2_repeat_count": {
+        "visibility": "hidden",
+        "required": "required"
+      },
+      "q2_repeat_block": {
+        "visibility": "hidden",
+        "required": "required"
+      },
+      "q3_category": {
+        "visibility": "hidden",
+        "required": "required"
+      },
+      "q4_freetext": {
+        "visibility": "hidden",
+        "required": "required"
+      }
+    },
+    "repeat": {
+      "q2_repeat_block": {
+        "countFrom": "q2_repeat_count",
+        "maxCount": 10
+      }
+    },
+    "submitButtonLabel": "回答を送信"
+  }
+}
